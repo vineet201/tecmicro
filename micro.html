@@ -274,7 +274,7 @@
             <div id="spotsBar" class="h-2 bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 rounded-full" style="width:50%"></div>
           </div>
         </div>
-        <form id="waitlist" class="mt-8 space-y-4 pointer-events-auto">
+        <form id="waitlist" action="https://formspree.io/f/xjkepzzq" method="POST" class="mt-8 space-y-4 pointer-events-auto" novalidate>
           <div class="grid md:grid-cols-2 gap-4">
             <label class="block">
               <span class="text-xs text-slate-400">Name</span>
@@ -289,7 +289,9 @@
             <span class="text-xs text-slate-400">IG Handle (optional)</span>
             <input id="handle" name="handle" type="text" class="mt-1 w-full rounded-xl bg-white/20 border border-white/10 px-4 py-3 text-white focus:ring-2 focus:ring-cyan-400 pointer-events-auto" placeholder="@expedition.alpha"/>
           </label>
+          <input type="hidden" name="form_name" value="Early Access Waitlist" />
           <button class="btn w-full rounded-2xl px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 font-semibold shadow-xl" type="submit">Launch Expedition</button>
+          <p id="formStatus" class="text-xs text-slate-400" role="status" aria-live="polite"></p>
           <p class="text-xs text-slate-500">By joining, you agree to receive occasional insider updates. Unsubscribe anytime.</p>
         </form>
       </div>
@@ -421,11 +423,11 @@
   </footer>
 
   <!-- MODAL -->
-  <div id="modal" class="fixed inset-0 hidden items-center justify-center bg-black/70 z-50">
+  <div id="modal" class="fixed inset-0 hidden flex items-center justify-center bg-black/70 z-50">
     <div class="glass rounded-3xl p-8 w-[92vw] max-w-md text-center relative">
       <button id="closeModal" class="absolute right-4 top-4 text-slate-400 hover:text-white">✕</button>
       <h4 class="text-2xl font-extrabold">Welcome, Explorer!</h4>
-      <p class="text-slate-300 mt-2">You’re officially inside <span class="font-semibold">The Curious Club</span>.</p>
+  <p class="text-slate-300 mt-2">Welcome Explorer! You’re officially inside <span class="font-semibold">&ldquo;The Inner Circle&rdquo;</span>.</p>
       <canvas id="confetti" class="mt-6 w-full h-24 rounded-xl bg-white/5"></canvas>
       <a href="#" id="dismiss" class="mt-6 inline-flex justify-center rounded-xl px-5 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 font-semibold">Close</a>
     </div>
@@ -530,38 +532,54 @@
     });
     nameInput?.addEventListener('input', ()=>{ if(nameInput.value.trim().length<2) showError(nameInput,'Enter your name'); else clearError(nameInput); });
 
-    form?.addEventListener('submit', (e)=>{
+    form?.addEventListener('submit', async (e)=>{
       e.preventDefault();
-      const data = Object.fromEntries(new FormData(form).entries());
-      // final validation
+      const fd = new FormData(form);
+      const data = Object.fromEntries(fd.entries());
       if(!data.name || !validEmail(data.email)){
         if(!data.name) showError(nameInput,'Enter your name');
         if(!validEmail(data.email)) showError(emailInput,'Please enter a valid email');
         return;
       }
-
-      // show spinner on button
       const submitBtn = form.querySelector('button[type="submit"]');
+      const statusEl = $('#formStatus');
       const origHtml = submitBtn.innerHTML;
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<span class="spinner" aria-hidden="true"></span> Sending';
+      statusEl.textContent = '';
+      try {
+        const res = await fetch(form.action, { method:'POST', body: fd, headers: { 'Accept': 'application/json' } });
+        if(res.ok){
+          // Update counters (optimistic UI)
+          const newLeft = Math.max(0, Number($('#spotsLeftText').textContent) - 1);
+          $('#spotsLeftText').textContent = newLeft;
+          $('#spotsLeftLabel').textContent = `${newLeft} / ${totalSeats} left`;
+          const newPct = 100 - Math.round((newLeft/totalSeats)*100);
+          setWidth($('#spotsProgress'), newPct);
+          setWidth($('#spotsBar'), newPct);
+          $('#spotsBadge').textContent = `${newLeft} left`;
 
-      // Here you can POST to your backend/FCM/etc.
-      console.log('Form Data:', data);
-
-      // Update counters (optimistic UI)
-      const newLeft = Math.max(0, Number($('#spotsLeftText').textContent) - 1);
-      $('#spotsLeftText').textContent = newLeft;
-      $('#spotsLeftLabel').textContent = `${newLeft} / ${totalSeats} left`;
-      const newPct = 100 - Math.round((newLeft/totalSeats)*100);
-      setWidth($('#spotsProgress'), newPct);
-      setWidth($('#spotsBar'), newPct);
-      $('#spotsBadge').textContent = `${newLeft} left`;
-
-      // Show modal
-      modal.classList.remove('hidden');
-      runConfetti();
-  setTimeout(()=>{ form.reset(); submitBtn.disabled=false; submitBtn.innerHTML = origHtml }, 900);
+          modal.classList.remove('hidden');
+          runConfetti();
+          statusEl.textContent = 'Success! You are in.';
+          statusEl.classList.remove('text-rose-400');
+          statusEl.classList.add('text-emerald-300');
+          form.reset();
+        } else {
+          const dataErr = await res.json().catch(()=>({}));
+          const msg = dataErr.errors?.map(e=>e.message).join(', ') || 'Something went wrong. Please try again later.';
+          statusEl.textContent = msg;
+          statusEl.classList.remove('text-emerald-300');
+          statusEl.classList.add('text-rose-400');
+        }
+      } catch(err){
+        statusEl.textContent = 'Network error. Please retry.';
+        statusEl.classList.remove('text-emerald-300');
+        statusEl.classList.add('text-rose-400');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = origHtml;
+      }
     });
 
     $('#dismiss')?.addEventListener('click', (e)=>{ e.preventDefault(); closeModal();});
