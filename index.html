@@ -508,6 +508,7 @@
   const totalSeats = 100; // total number of seats
   const left = 97;        // number of seats left
   // ================================
+  // Percentage of seats REMAINING (used directly for width)
   const pct = Math.max(0, Math.min(100, Math.round((left/totalSeats)*100)));
 
     const setWidth = (el, p)=> el.style.width = Math.min(100, Math.max(5, p)) + '%';
@@ -566,9 +567,10 @@
           const newLeft = Math.max(0, Number($('#spotsLeftText').textContent) - 1);
           $('#spotsLeftText').textContent = newLeft;
           $('#spotsLeftLabel').textContent = `${newLeft} / ${totalSeats} left`;
-          const newPct = 100 - Math.round((newLeft/totalSeats)*100);
-          setWidth($('#spotsProgress'), newPct);
-          setWidth($('#spotsBar'), newPct);
+          // Recompute remaining percentage after a successful submission
+          const remPct = Math.max(0, Math.min(100, Math.round((newLeft/totalSeats)*100)));
+          setWidth($('#spotsProgress'), remPct);
+          setWidth($('#spotsBar'), remPct);
           $('#spotsBadge').textContent = `${newLeft} left`;
 
           modal.classList.remove('hidden');
