@@ -274,7 +274,7 @@
             <div id="spotsBar" class="h-2 bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 rounded-full" style="width:50%"></div>
           </div>
         </div>
-        <form id="waitlist" action="https://formspree.io/f/xjkepzzq" method="POST" class="mt-8 space-y-4 pointer-events-auto" novalidate>
+  <form id="waitlist" action="https://formsubmit.co/theexpeditioncollectiveweb@gmail.com" method="POST" class="mt-8 space-y-4 pointer-events-auto" novalidate>
           <div class="grid md:grid-cols-2 gap-4">
             <label class="block">
               <span class="text-xs text-slate-400">Name</span>
@@ -290,6 +290,12 @@
             <input id="handle" name="handle" type="text" class="mt-1 w-full rounded-xl bg-white/20 border border-white/10 px-4 py-3 text-white focus:ring-2 focus:ring-cyan-400 pointer-events-auto" placeholder="@expedition.alpha"/>
           </label>
           <input type="hidden" name="form_name" value="Early Access Waitlist" />
+          <input type="hidden" name="_subject" value="New Early Access Waitlist Submission" />
+          <input type="hidden" name="_captcha" value="false" />
+          <input type="hidden" name="_template" value="table" />
+          <input type="hidden" name="_autoresponse" value="Thanks Explorer! Your request for early access is received. We will be in touch soon." />
+          <!-- Honeypot field for bots -->
+          <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" />
           <button class="btn w-full rounded-2xl px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 font-semibold shadow-xl" type="submit">Launch Expedition</button>
           <p id="formStatus" class="text-xs text-slate-400" role="status" aria-live="polite"></p>
           <p class="text-xs text-slate-500">By joining, you agree to receive occasional insider updates. Unsubscribe anytime.</p>
@@ -537,7 +543,7 @@
     });
     nameInput?.addEventListener('input', ()=>{ if(nameInput.value.trim().length<2) showError(nameInput,'Enter your name'); else clearError(nameInput); });
 
-    form?.addEventListener('submit', async (e)=>{
+  form?.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const fd = new FormData(form);
       const data = Object.fromEntries(fd.entries());
@@ -553,8 +559,9 @@
       submitBtn.innerHTML = '<span class="spinner" aria-hidden="true"></span> Sending';
       statusEl.textContent = '';
       try {
-        const res = await fetch(form.action, { method:'POST', body: fd, headers: { 'Accept': 'application/json' } });
-        if(res.ok){
+    // FormSubmit returns 200 with JSON when Accept: application/json
+    const res = await fetch(form.action, { method:'POST', body: fd, headers: { 'Accept': 'application/json' } });
+    if(res.ok){
           // Update counters (optimistic UI)
           const newLeft = Math.max(0, Number($('#spotsLeftText').textContent) - 1);
           $('#spotsLeftText').textContent = newLeft;
