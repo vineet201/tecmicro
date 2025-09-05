@@ -274,7 +274,7 @@
             <div id="spotsBar" class="h-2 bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 rounded-full" style="width:50%"></div>
           </div>
         </div>
-        <form id="waitlist" class="mt-8 space-y-4 pointer-events-auto">
+  <form id="waitlist" class="mt-8 space-y-4 pointer-events-auto" action="https://formspree.io/f/xjkepzzq" method="POST">
           <div class="grid md:grid-cols-2 gap-4">
             <label class="block">
               <span class="text-xs text-slate-400">Name</span>
@@ -526,37 +526,20 @@
     nameInput?.addEventListener('input', ()=>{ if(nameInput.value.trim().length<2) showError(nameInput,'Enter your name'); else clearError(nameInput); });
 
     form?.addEventListener('submit', (e)=>{
-      e.preventDefault();
+      // Only do validation, let the form submit to Formspree if valid
       const data = Object.fromEntries(new FormData(form).entries());
-      // final validation
       if(!data.name || !validEmail(data.email)){
         if(!data.name) showError(nameInput,'Enter your name');
         if(!validEmail(data.email)) showError(emailInput,'Please enter a valid email');
+        e.preventDefault();
         return;
       }
-
-      // show spinner on button
+      // Optionally show spinner, but let the form submit
       const submitBtn = form.querySelector('button[type="submit"]');
       const origHtml = submitBtn.innerHTML;
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<span class="spinner" aria-hidden="true"></span> Sending';
-
-      // Here you can POST to your backend/FCM/etc.
-      console.log('Form Data:', data);
-
-      // Update counters (optimistic UI)
-      const newLeft = Math.max(0, Number($('#spotsLeftText').textContent) - 1);
-      $('#spotsLeftText').textContent = newLeft;
-      $('#spotsLeftLabel').textContent = `${newLeft} / ${totalSeats} left`;
-      const newPct = 100 - Math.round((newLeft/totalSeats)*100);
-      setWidth($('#spotsProgress'), newPct);
-      setWidth($('#spotsBar'), newPct);
-      $('#spotsBadge').textContent = `${newLeft} left`;
-
-      // Show modal
-      modal.classList.remove('hidden');
-      runConfetti();
-  setTimeout(()=>{ form.reset(); submitBtn.disabled=false; submitBtn.innerHTML = origHtml }, 900);
+      // Allow default submit to Formspree
     });
 
     $('#dismiss')?.addEventListener('click', (e)=>{ e.preventDefault(); closeModal();});
