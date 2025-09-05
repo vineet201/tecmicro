@@ -473,50 +473,48 @@ window.addEventListener("load", () => {
   setupFloatingLabels() // Setup floating label functionality
 })
 
-// Logo Animation
+// Logo Animation (disabled hover effect per request)
 const wrapper = document.getElementById("logoWrapper")
 const logotype = document.getElementById("logotype")
 const monogram = document.getElementById("monogram")
-let hoverActive = false
-let enterTimeout
-
-wrapper.addEventListener("mouseenter", () => {
-  // Don't animate if header is blurred or on who-we-are page
-  if (header.classList.contains("header-blurred") || window.location.pathname.includes("who-we-are.html")) {
-    return
-  }
-
-  hoverActive = true
-  logotype.style.transform = "scaleX(1) scaleY(3)"
+const DISABLE_LOGO_HOVER_ANIMATION = true
+if (!DISABLE_LOGO_HOVER_ANIMATION && wrapper && logotype && monogram) {
+  let hoverActive = false
+  let enterTimeout
+  wrapper.addEventListener("mouseenter", () => {
+    if (header.classList.contains("header-blurred") || window.location.pathname.includes("who-we-are.html")) return
+    hoverActive = true
+    logotype.style.transform = "scaleX(1) scaleY(3)"
+    logotype.style.opacity = "1"
+    clearTimeout(enterTimeout)
+    enterTimeout = setTimeout(() => {
+      if (hoverActive && !header.classList.contains("header-blurred")) {
+        logotype.style.transform = "scaleX(0) scaleY(3)"
+        logotype.style.opacity = "0"
+        monogram.style.transform = "scaleX(1) scale(0.6)"
+        monogram.style.opacity = "1"
+      }
+    }, 75)
+  })
+  wrapper.addEventListener("mouseleave", () => {
+    if (header.classList.contains("header-blurred") || window.location.pathname.includes("who-we-are.html")) return
+    hoverActive = false
+    clearTimeout(enterTimeout)
+    monogram.style.transform = "scaleX(2.5) scale(0.6)"
+    monogram.style.opacity = "0"
+    setTimeout(() => {
+      if (!hoverActive && !header.classList.contains("header-blurred")) {
+        logotype.style.transform = "scaleX(1) scaleY(1)"
+        logotype.style.opacity = "1"
+      }
+    }, 75)
+  })
+} else if (wrapper && logotype && monogram) {
+  // Ensure both variants visible / stable without animation side-effects
+  logotype.style.transform = "scaleX(1) scaleY(1)"
   logotype.style.opacity = "1"
-  clearTimeout(enterTimeout)
-  enterTimeout = setTimeout(() => {
-    if (hoverActive && !header.classList.contains("header-blurred")) {
-      logotype.style.transform = "scaleX(0) scaleY(3)"
-      logotype.style.opacity = "0"
-      monogram.style.transform = "scaleX(1) scale(0.6)"
-      monogram.style.opacity = "1"
-    }
-  }, 75)
-})
-
-wrapper.addEventListener("mouseleave", () => {
-  // Don't animate if header is blurred or on who-we-are page
-  if (header.classList.contains("header-blurred") || window.location.pathname.includes("who-we-are.html")) {
-    return
-  }
-
-  hoverActive = false
-  clearTimeout(enterTimeout)
-  monogram.style.transform = "scaleX(2.5) scale(0.6)"
-  monogram.style.opacity = "0"
-  setTimeout(() => {
-    if (!hoverActive && !header.classList.contains("header-blurred")) {
-      logotype.style.transform = "scaleX(1) scaleY(1)"
-      logotype.style.opacity = "1"
-    }
-  }, 75)
-})
+  monogram.style.opacity = "0"; // keep original design (only logotype)
+}
 
 // Make header logo/tap navigate to home page
 document.addEventListener("DOMContentLoaded", () => {

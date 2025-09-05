@@ -91,13 +91,47 @@
       100%{opacity:1;filter:blur(0) brightness(1);transform:translateY(0);}
     }
   @media (prefers-reduced-motion:reduce){ .ghost-seq .ghost-word{opacity:1!important;filter:none!important;transform:none!important;animation:none!important;} }
+  /* Loader Styles */
+  .loader-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#070814;z-index:999;transition:opacity .4s ease;}
+  .loader{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;font-family:inherit}
+  .loading-text{color:#fff;font-size:14pt;font-weight:600;letter-spacing:.5px}
+  .loading-text .dot{margin-left:3px;animation:blink 1.5s infinite}
+  .loading-text .dot:nth-child(2){animation-delay:.3s}
+  .loading-text .dot:nth-child(3){animation-delay:.6s}
+  .loading-bar-background{--height:30px;display:flex;align-items:center;box-sizing:border-box;padding:5px;width:220px;height:var(--height);background:#212121;box-shadow:#0c0c0c -2px 2px 4px 0 inset;border-radius:calc(var(--height)/2)}
+  .loading-bar{position:relative;display:flex;justify-content:center;flex-direction:column;--height:20px;width:0%;height:var(--height);overflow:hidden;background:linear-gradient(0deg,#de4a0f 0%,#f9c74f 100%);border-radius:calc(var(--height)/2);animation:loading 3.6s ease-out infinite}
+  .white-bars-container{position:absolute;display:flex;align-items:center;gap:18px}
+  .white-bar{background:linear-gradient(-45deg,#fff 0%,rgba(255,255,255,0) 70%);width:10px;height:45px;opacity:.35;transform:rotate(45deg)}
+  @keyframes loading{0%{width:0}80%{width:100%}100%{width:100%}}
+  @keyframes blink{0%,100%{opacity:0}50%{opacity:1}}
   </style>
 </head>
 <body class="relative">
+  <div id="pageLoader" class="loader-overlay">
+    <div class="loader">
+      <div class="loading-text">Loading<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></div>
+      <div class="loading-bar-background">
+        <div class="loading-bar">
+          <div class="white-bars-container">
+            <div class="white-bar"></div>
+            <div class="white-bar"></div>
+            <div class="white-bar"></div>
+            <div class="white-bar"></div>
+            <div class="white-bar"></div>
+            <div class="white-bar"></div>
+            <div class="white-bar"></div>
+            <div class="white-bar"></div>
+            <div class="white-bar"></div>
+            <div class="white-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <!-- Dim overlay for all except hero section -->
   <div class="background-dim"></div>
   <!-- Standard Site Header -->
-  <header class="header">
+  <header class="header header-blurred">
     <div class="logo">
       <div class="logo-wrapper" id="logoWrapper">
         <img src="images/image1.png" class="logotype" id="logotype" alt="Logotype" />
@@ -678,6 +712,14 @@
     document.querySelectorAll('#perks .glass, #faq details').forEach(el=>observer.observe(el));
 
     // (Theme toggle removed to match standard header across site)
+    // Loader dismissal
+    window.addEventListener('load',()=>{
+      const loader = document.getElementById('pageLoader');
+      if(loader){
+        loader.style.opacity='0';
+        setTimeout(()=> loader.remove(), 450);
+      }
+    });
   </script>
   <script src="script.js"></script>
 </body>
